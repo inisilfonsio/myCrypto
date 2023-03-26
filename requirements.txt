@@ -1,4 +1,5 @@
 Flask==2.2.3
 Flask-Cors==3.0.10
+flask-requests==0.0.14
 Flask-WTF==1.1.1
 python-dotenv==1.0.0

@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>myCRYPTO</title>
+  
+    {% block scripts %}
+    {% endblock scripts %}
+</head>
+
+<body>
+
+    {% include 'components/header.html' %}
+    {% include 'components/navbar.html' %}
+
+    <div class="overlay off" id="spinner">
+        <div class="doble-anillo"></div>
+    </div>
+
+    <main>
+
+        {% block contenido%}
+        {% endblock contenido %}
+
+    </main>
+
+    {% include 'components/footer.html' %}
+
+</body>
+
+</html>

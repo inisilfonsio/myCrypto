@@ -1,5 +1,8 @@
 from datetime import date
+import requests
 import sqlite3
+
+from config import API_URL, CAMPOS_TABLA, ENDPOINT, HEADERS, NOMBRE_TABLA
 
 
 class DBManager:
@@ -100,6 +103,8 @@ class DBManager:
             for column in cursor.description:
                 nombres_columna.append(column[0])
 
+            # nombres_columna = ['id', 'fecha', 'concepto', 'tipo', 'cantidad']
+            # datos           = ( 3,  2023-02-28, 'Camiseta', 'G',   15.00)
             movimiento = {}
             indice = 0
             for nombre in nombres_columna:
@@ -114,3 +119,33 @@ class DBManager:
 
         conexion.close()
         return resultado
+
+
+class APIError(Exception):
+    pass
+
+
+class CriptoModel:
+    '''
+    Obtiene una consulta sobre el valor de cambio entre dos activos
+    '''
+
+    origen = ''
+    destino = ''
+
+    def __init__(self):
+        self.cambio = 0.0
+
+    def consultar_cambio(self):
+        url = f'{API_URL}{ENDPOINT}/{self.origen}/{self.destino}'
+        response = requests.get(url, headers=HEADERS)
+        print(
+            f"Has solicitado {response.headers.get('x-ratelimit-used')}/100 peticiones")
+
+        if response.status_code == 200:
+            exchange = response.json()
+            self.cambio = exchange.get("rate")
+        else:
+            raise APIError(
+                f'Error {response.status_code} {response.reason} al consultar la API'
+            )

@@ -1,0 +1,62 @@
+{% extends 'base.html' %}
+
+<h1>MOVIMIENTOS</h1>
+
+{% block contenido %}
+<table class="paper">
+    <tr>
+        <th class="titulo-tabla">Fecha</th>
+                <th class="titulo-tabla">Hora</th>
+                <th class="titulo-tabla">Origen</th>
+                <th class="titulo-tabla">Invertido</th>
+                <th class="titulo-tabla">Destino</th>
+                <th class="titulo-tabla">Obtenido</th>
+                <th class="titulo-tabla">Unitario</th>
+    </tr>
+
+
+    {% if movs %}
+    {% for m in movs %}
+    <tr>
+        <td>
+            {% if m.fecha %}
+            {{ m.fecha }}
+            {% else %}
+            ---
+            {% endif %}
+        </td>
+        <td>{{ m.hora }}</td>
+        <td>{{ m.origen }}</td>
+        <td class="numero">{{ m.invertido }}</td>
+        <td>{{ m.destino }}</td>
+        <td class="numero">{{ m.obtenido }}</td>
+        <td class="numero">{{ m.unitario }}</td>
+
+    </tr>
+    {% if m.has_errors %}
+    <tr>
+        <td></td>
+        <td colspan="3">
+            {% for error in m.errores %}
+            <p class="error">{{ error }}</p>
+            {% endfor %}
+        </td>
+    </tr>
+    {% endif %}
+    {% endfor %}
+    {% else %}
+    <tr>
+        <td colspan='4' class="lista-vacia">No hay movimientos para mostrar</td>
+    </tr>
+    {% endif %}
+    
+    
+</table>
+<a class='button' href="/">Estado</a>
+<a class='button' href="/">Comprar</a>
+
+{% endblock contenido %}
+
+{% block head_title %}
+{{ super() }}: Inicio
+{% endblock head_title %}
