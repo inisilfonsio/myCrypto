@@ -1,0 +1,27 @@
+:root {
+    --primary-color: #b8174c;
+    --secondary-color: #19a187;
+
+    --medium-gray: blue;
+    --error-color: var(--primary-color);
+
+    --default-border: solid thin var(--secondary-color)
+}
+
+header {
+    background-color: var(--primary-color);
+    color: blue;
+    height: 50px;
+    font-size: large;
+    line-height: 50px;
+    padding-left: 25px;
+}
+
+.button-signin {
+    background-color: blue;
+}
+
+.logo {
+    width: 6px;
+    height: 10px;
+}

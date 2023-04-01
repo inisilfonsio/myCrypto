@@ -1,5 +1,5 @@
 from .models import CriptoModel
-from .views_coinapi import CriptoView
+from .api import CriptoView
 
 
 class CriptoController:

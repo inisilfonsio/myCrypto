@@ -1,17 +1,67 @@
 from datetime import date
+from passlib.hash import pbkdf2_sha256
 import requests
 import sqlite3
 
-from config import API_URL, CAMPOS_TABLA, ENDPOINT, HEADERS, NOMBRE_TABLA
+from config import API_URL, CAMPOS_TABLA, ENDPOINT, HEADERS
+
+
+class User:
+
+    def __init__(self, id, nombre, contrasena):
+        self.id = id
+        self.nombre = nombre
+        self.contrasena = contrasena
+
+    def verificarContrasena(self, contrasena, contrasena_encriptada):
+        verificacion = pbkdf2_sha256.verify(
+            contrasena, contrasena_encriptada)
+
+        return verificacion
 
 
 class DBManager:
     """
     Clase para interactuar con la base de datos SQLite
     """
+    CAMPOS = '''id INTEGER PRIMARY KEY NOT NULL UNIQUE, 
+                fecha TEXT NO NULL, 
+                hora TEXT NOT NULL,
+                origen TEXT NOT NULL,
+                invertido NUMERIC NOT NULL,
+                destino TEXT NOT NULL,
+                obtenido NUMERIC NOT NULL,
+                unitario NUMERIC NOT NULL'''
 
     def __init__(self, ruta):
         self.ruta = ruta
+
+    def comprobarUsuario(self, user):
+        conexion = sqlite3.connect(self.ruta)
+        cursor = conexion.cursor()
+        peticion = f"SELECT * FROM usuarios WHERE usuario = '{user.nombre}'"
+
+        cursor.execute(peticion)
+        result = cursor.fetchone()
+
+        if result != None:
+            contrasena_encriptada = result[2]
+            contrasena = user.contrasena
+            verificacion = User.verificarContrasena(
+                0, contrasena, contrasena_encriptada)
+            usuario = User(result[0], result[1], verificacion)
+            return usuario
+
+        else:
+            return None
+
+    def crearTabla(self, usuario):
+        conexion = sqlite3.connect(self.ruta)
+        cursor = conexion.cursor()
+        peticion = f'''CREATE TABLE {usuario} ({self.CAMPOS})'''
+        cursor.execute(peticion)
+        conexion.commit()
+        conexion.close()
 
     def consultaSQL(self, consulta):
         # 1. Conectar a la base de datos
@@ -27,70 +77,31 @@ class DBManager:
         # 4.1 obtener los datos
         datos = cursor.fetchall()
 
-        self.movimientos = []
+        self.activoss = []
         nombres_columna = []
         for columna in cursor.description:
             nombres_columna.append(columna[0])
 
         for dato in datos:
             indice = 0
-            movimiento = {}
+            activos = {}
             for nombre in nombres_columna:
-                movimiento[nombre] = dato[indice]
+                activos[nombre] = dato[indice]
                 indice += 1
 
-            self.movimientos.append(movimiento)
+            self.activoss.append(activos)
 
         # 5. Cerrar la conexión
         conexion.close()
 
         # 6. Devolver la colección de resultados
-        return self.movimientos
+        return self.activoss
 
-    def conectar(self):
-        conexion = sqlite3.connect(self.ruta)
-        cursor = conexion.cursor()
-
-        return conexion, cursor
-
-    def desconectar(self, conexion):
-        conexion.close()
-
-    def consultaConParametros(self, consulta, params):
-        conexion, cursor = self.conectar()
-
-        resultado = False
-        try:
-            cursor.execute(consulta, params)
-            conexion.commit()
-            resultado = True
-        except Exception as ex:
-            print(ex)
-            conexion.rollback()
-
-        self.desconectar(conexion)
-        return resultado
-
-    def borrar(self, id):
-        consulta = f'DELETE FROM {NOMBRE_TABLA} WHERE id=?'
-        conexion = sqlite3.connect(self.ruta)
-        cursor = conexion.cursor()
-        resultado = False
-        try:
-            cursor.execute(consulta, (id,))
-            conexion.commit()
-            resultado = True
-        except:
-            conexion.rollback()
-
-        conexion.close()
-        return resultado
-
-    def obtenerMovimiento(self, id):
+    def obtenerActivo(self, usuario, id):
         """
-        Obtiene un movimiento a partir de su ID de la base de datos
+        Obtiene un activo a partir de su ID de la base de datos
         """
-        consulta = f'SELECT {CAMPOS_TABLA} FROM {NOMBRE_TABLA} WHERE id=?'
+        consulta = f'SELECT {CAMPOS_TABLA} FROM {usuario} WHERE id=?'
         conexion = sqlite3.connect(self.ruta)
         cursor = conexion.cursor()
         cursor.execute(consulta, (id,))
@@ -103,19 +114,17 @@ class DBManager:
             for column in cursor.description:
                 nombres_columna.append(column[0])
 
-            # nombres_columna = ['id', 'fecha', 'concepto', 'tipo', 'cantidad']
-            # datos           = ( 3,  2023-02-28, 'Camiseta', 'G',   15.00)
-            movimiento = {}
+            activos = {}
             indice = 0
             for nombre in nombres_columna:
-                movimiento[nombre] = datos[indice]
+                activos[nombre] = datos[indice]
                 indice += 1
 
-            print(f'Fecha ANTES: {movimiento["fecha"]}')
-            movimiento['fecha'] = date.fromisoformat(movimiento['fecha'])
-            print(f'DESPUÉS:     {movimiento["fecha"]}')
+            print(f'Fecha ANTES: {activos["fecha"]}')
+            activos['fecha'] = date.fromisoformat(activos['fecha'])
+            print(f'DESPUÉS:  {activos["fecha"]}')
 
-            resultado = movimiento
+            resultado = activos
 
         conexion.close()
         return resultado
