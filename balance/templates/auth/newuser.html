@@ -1,0 +1,27 @@
+{% extends 'auth/login.html' %}
+
+{% block scripts%}
+<script src="/static/js/auth.js"></script>
+{% endblock scripts %}
+
+{% block contenido %}
+
+
+<body>
+  <img class="logo" src="{{ url_for('static', filename='images/logo.jpg') }}" alt="" width="300"
+    height="100">
+
+  <h2>{{ titulo }}</h2>
+  <form class='form_sign' action='/nuevo' method='POST'>
+    <label for="usuario">Usuario:</label>
+    <input type="text" id="usuario" name="usuario">
+    <br>
+    <label for="contrasena">Contraseña:</label>
+    <input type="password" id="contrasena" name="contrasena">
+    <br>
+    <button type="submit" onclick="enviar()">{{ titulo }}</button>
+  </form>
+
+</body>
+
+{% endblock contenido %}

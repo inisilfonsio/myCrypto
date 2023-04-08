@@ -1,0 +1,4 @@
+1º Accedemos mediante un login: 'usuario | contraseña' (la raíz '/' redirige a '/login')
+2º 'auth.js' envía solicitud POST al servidor, crea objeto JS y lo convierte a JSON.
+3º Recogemos datos en backend, creamos tabla en 'balance.db' con nombre de usuario y campos correspondientes.
+4º Conectamos con coinapi y hacemos solicitudes.

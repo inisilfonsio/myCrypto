@@ -1,43 +1,38 @@
-{% extends './base.html' %}
+<!DOCTYPE html>
+<html lang="en">
 
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>myCRYPTO</title>
+  <link rel="shortcut icon" href="{{ url_for('static', filename='images/logo.jpg') }}">
+  <link rel="stylesheet"
+    href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.3.0/css/all.min.css">
+
+</head>
 {% block scripts%}
 <script src="/static/js/auth.js"></script>
 {% endblock scripts %}
 
 {% block contenido %}
 
-
 <body>
   <img class="logo" src="{{ url_for('static', filename='images/logo.jpg') }}" alt="" width="300"
     height="100">
 
-  {% if login %}
   <h2>{{ titulo }}</h2>
   <form class='form_sign' action='/login' method='POST'>
     <label for="usuario">Usuario:</label>
     <input type="text" id="usuario" name="usuario">
     <br>
     <label for="contrasena">Contraseña:</label>
-    <input type="contrasena" id="contrasena" name="contrasena">
-    <br>
-    <a href="/nuevo">Crear cuenta</a>
-  </form>
-
-  <button type="submit" onclick="enviar()">{{ titulo }}</button>
-  {% else %}
-  <h2>{{ titulo }}</h2>
-  <form class='form_sign' action='/nuevo' method='POST'>
-    <label for="usuario">Usuario:</label>
-    <input type="text" id="usuario" name="usuario">
-    <br>
-    <label for="contrasena">Contraseña:</label>
-    <input type="contrasena" id="contrasena" name="contrasena">
-    <br>
-
+    <input type="password" id="contrasena" name="contrasena">
+    <p>
+      ¿Aún no tienes una cuenta? <a href="{{ url_for('nuevo') }}">Regístrate aquí</a>
+    </p>
     <button type="submit" onclick="enviar()">{{ titulo }}</button>
   </form>
-  <p>¿Aún no tienes una cuenta? <a href="{{ url_for('nuevo') }}">Regístrate aquí</a>.</p>
-  {% endif %}
 </body>
 
-{% endblock contenido %}
+  {% endblock contenido %}

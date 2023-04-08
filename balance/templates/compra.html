@@ -1,51 +1,46 @@
 {% extends 'base.html' %}
 
-
 {% block contenido %}
-<h1>COMPRA DE CRYPTOS</h1>
-<table class="paper">
-    <tr>
-        <th class="titulo-tabla">Origen</th>
-        <th class="titulo-tabla">Invertido</th>
-        <th class="titulo-tabla">Destino</th>
-        <th class="titulo-tabla">Obtenido</th>
-        <th class="titulo-tabla">Unitario</th>
-    </tr>
+<h2>COMPRA DE CRYPTOS</h2>
 
-
-    {% if movs %}
-    {% for m in movs %}
-    <tr>
-        <td>{{ m.origen }}</td>
-        <td class="numero">{{ m.invertido }}</td>
-        <td>{{ m.destino }}</td>
-        <td class="numero">{{ m.obtenido }}</td>
-        <td class="numero">{{ m.unitario }}</td>
-
-    </tr>
-    {% if m.has_errors %}
-    <tr>
-        <td></td>
-        <td colspan="3">
-            {% for error in m.errores %}
-            <p class="error">{{ error }}</p>
+<body>
+    <form class='form-comprar' id='form-comprar' name='form-comprar'>
+        <label for="origen">Origen:</label>
+        <select id="origen" name="origen">
+            {% for crypto in lista_cryptos %}
+            <option value="{{ crypto }}">{{ crypto }}</option>
             {% endfor %}
-        </td>
-    </tr>
-    {% endif %}
-    {% endfor %}
-    {% else %}
-    <tr>
-        <td colspan='4' class="lista-vacia">No hay movimientos para mostrar</td>
-    </tr>
-    {% endif %}
-    
-    
-</table>
-<a class='button' href="/">Invertir</a>
+        </select>
 
+        <br><br>
+
+        <label for="destino">Destino:</label>
+        <select id="destino" name="destino">
+            {% for crypto in lista_cryptos %}
+            {% if crypto != origen %}
+            <option value="{{ crypto }}">{{ crypto }}</option>
+            {% endif %}
+            {% endfor %}
+        </select>
+        <br><br>
+        <label for="invertido">Invertido:</label>
+        <input type="number" id="invertido" name="invertido" required>
+        <br><br>
+        <button id="calcular" type="button">Calcular</button>
+        <br><br>
+        <label for="obtenido">Obtenido:</label>
+        <output id="obtenido"></output>
+        <span id='crypto-destino'></span>
+        <br><br>
+        <label for="unitario">Valor Unitario:</label>
+        <output id="unitario"></output>
+        <span id='crypto-origen'></span>
+        <br><br>
+        <button id="invertir" type="button" disabled>Invertir</button>
+    </form>
+
+    {% block scripts%}
+    <script src="/static/js/form.js"></script>
+    {% endblock scripts %}
+</body>
 {% endblock contenido %}
-
-{% block head_title %}
-{{ super() }}: Inicio
-{% endblock head_title %}

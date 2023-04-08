@@ -1,15 +1,10 @@
 {% extends 'base.html' %}
 
+
 {% block contenido %}
-
-<h2>Bienvenido, {{ nombre_usuario }}!</h2>
-
-<h2>MOVIMIENTOS</h2>
-
+<h2>COMPRA DE CRYPTOS</h2>
 <table class="paper">
     <tr>
-        <th class="titulo-tabla">Fecha</th>
-        <th class="titulo-tabla">Hora</th>
         <th class="titulo-tabla">Origen</th>
         <th class="titulo-tabla">Invertido</th>
         <th class="titulo-tabla">Destino</th>
@@ -17,17 +12,10 @@
         <th class="titulo-tabla">Unitario</th>
     </tr>
 
+
     {% if movs %}
     {% for m in movs %}
     <tr>
-        <td>
-            {% if m.fecha %}
-            {{ m.fecha }}
-            {% else %}
-            ---
-            {% endif %}
-        </td>
-        <td>{{ m.hora }}</td>
         <td>{{ m.origen }}</td>
         <td class="numero">{{ m.invertido }}</td>
         <td>{{ m.destino }}</td>
@@ -51,11 +39,10 @@
         <td colspan='4' class="lista-vacia">No hay movimientos para mostrar</td>
     </tr>
     {% endif %}
-
-
+    
+    
 </table>
-<a class='button' href="/status">Estado</a>
-<a class='button' href="/comprar">Comprar</a>
+<a class='button' href="/inicio">Invertir</a>
 
 {% endblock contenido %}
 

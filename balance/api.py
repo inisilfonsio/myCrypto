@@ -1,28 +1,36 @@
-"""
-Modelo <==> Controlador <==> Vista
+from flask import jsonify, request, session
 
-Modelo <////////> Vista  NUNCA hay comunicación entre Modelo y Vista
-
-La vista interactúa con el usuario:
-1. entrada de datos
-2. muestra datos
-TODO: Clase CriptoView
-"""
+from . import app
+from balance.models import *
+from config import API_URL, ENDPOINT, HEADERS, RUTA_PORTFOLIO
 
 
-class CriptoView:
+@app.route('/api/v1/consultar-cambio', methods=['POST'])
+def consultaCrypto():
+    origen = request.form.get('origen')
+    destino = request.form.get('destino')
 
-    def pedir_monedas(self):
-        origen = input('¿Qué moneda quieres cambiar? ')
-        origen = origen.upper()
-        destino = input('¿Qué moneda deseas obtener? ')
-        destino = destino.upper()
+    invertido = request.form.get('invertido')
+    invertido_float = float(invertido)
 
-        return (origen, destino)
+    cripto = API(API_URL, ENDPOINT, HEADERS)
+    json = cripto.consultar_api(origen, destino)
 
-    def mostrar_cambio(self, origen, destino, cambio):
-        print(f'Un {origen} vale lo mismo que {cambio:,.2f} {destino}')
+    cambio = json.get('rate')
+    cambio_float = float(cambio)
 
-    def quieres_seguir(self):
-        seguir = input('¿Quieres consultar de nuevo? (S/N) ')
-        return seguir
+    obtenido = (invertido_float * cambio_float)
+    unitario = 1/cambio_float
+
+    return jsonify({'obtenido': obtenido, 'unitario': unitario})
+
+
+@app.route('/api/v1/guardar-cambio', methods=['POST'])
+def guardarCrypto():
+    tabla = session['nombre_usuario']
+    datos = request.get_json()
+
+    gestor = DBManager(RUTA_PORTFOLIO)
+    operacion = gestor.guardarDatos(tabla, datos)
+
+    return jsonify({'success': operacion})

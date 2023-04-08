@@ -1,9 +1,9 @@
-from datetime import date, datetime
+from datetime import date
 from passlib.hash import pbkdf2_sha256
 import requests
 import sqlite3
 
-from config import CAMPOS_TABLA
+from config import API_URL, CAMPOS_TABLA, ENDPOINT, HEADERS
 
 
 class User:
@@ -63,22 +63,6 @@ class DBManager:
         conexion.commit()
         conexion.close()
 
-    def guardarDatos(self, tabla, datos):
-        campos = ', '.join(datos.keys())
-        valores = ', '.join(['?'] * len(datos))
-        consulta = f"INSERT INTO {tabla} ({campos}) VALUES ({valores})"
-        try:
-            conexion = sqlite3.connect(self.ruta)
-            cursor = conexion.cursor()
-            cursor.execute(consulta, list(datos.values()))
-            conexion.commit()
-            conexion.close()
-            return True
-
-        except Exception as ex:
-            print("Error al guardar los datos: ", ex)
-            return False
-
     def consultaSQL(self, consulta):
         # 1. Conectar a la base de datos
         conexion = sqlite3.connect(self.ruta)
@@ -93,7 +77,7 @@ class DBManager:
         # 4.1 obtener los datos
         datos = cursor.fetchall()
 
-        self.activos = []
+        self.activoss = []
         nombres_columna = []
         for columna in cursor.description:
             nombres_columna.append(columna[0])
@@ -105,13 +89,13 @@ class DBManager:
                 activos[nombre] = dato[indice]
                 indice += 1
 
-            self.activos.append(activos)
+            self.activoss.append(activos)
 
         # 5. Cerrar la conexión
         conexion.close()
 
         # 6. Devolver la colección de resultados
-        return self.activos
+        return self.activoss
 
     def obtenerActivo(self, usuario, id):
         """
@@ -146,17 +130,37 @@ class DBManager:
         return resultado
 
 
+class APIError(Exception):
+    pass
+
+
+class CriptoModel:
+    '''
+    Obtiene una consulta sobre el valor de cambio entre dos activos
+    '''
+
+    origen = ''
+    destino = ''
+
+    def __init__(self):
+        self.cambio = 0.0
+
+    def consultar_cambio(self):
+        url = f'{API_URL}{ENDPOINT}/{self.origen}/{self.destino}'
+        response = requests.get(url, headers=HEADERS)
+        print(
+            f"Has solicitado {response.headers.get('x-ratelimit-used')}/100 peticiones")
+
+        if response.status_code == 200:
+            exchange = response.json()
+            self.cambio = exchange.get("rate")
+        else:
+            raise APIError(
+                f'Error {response.status_code} {response.reason} al consultar la API'
+            )
+
+
 class CriptoView:
-    """
-Modelo <==> Controlador <==> Vista
-
-Modelo <////////> Vista  NUNCA hay comunicación entre Modelo y Vista
-
-La vista interactúa con el usuario:
-1. entrada de datos
-2. muestra datos
-TODO: Clase CriptoView
-"""
 
     def pedir_monedas(self):
         origen = input('¿Qué moneda quieres cambiar? ')
@@ -172,47 +176,3 @@ TODO: Clase CriptoView
     def quieres_seguir(self):
         seguir = input('¿Quieres consultar de nuevo? (S/N) ')
         return seguir
-
-
-class API:
-
-    def __init__(self, api_url, endpoint, headers):
-        self.api_url = api_url
-        self.endpoint = endpoint
-        self.headers = headers
-
-    def consultar_api(self, origen, destino):
-        url = f"{self.api_url}{self.endpoint}/{origen}/{destino}"
-        response = requests.get(url, headers=self.headers)
-        print(
-            f"Has solicitado {response.headers.get('x-ratelimit-used')}/100 peticiones")
-
-        if response.status_code == 200:
-            exchange = response.json()
-            print(response.json())
-            return exchange
-        else:
-            raise APIError(f"Error {response.status_code}: {response.reason}")
-
-    def errores_api(self):
-        url = f"{self.api_url}{self.endpoint}"
-        response = requests.get(url, headers=self.headers)
-        if response.status_code == 200:
-            return response.json()["errors"]
-        else:
-            raise APIError(f"Error {response.status_code}: {response.reason}")
-
-
-class APIError(Exception):
-    """Clase de excepción personalizada para errores de la API"""
-
-    def __init__(self, message, status_code=None, response=None):
-        self.message = message
-        self.status_code = status_code
-        self.response = response
-
-    def __str__(self):
-        if self.status_code:
-            return f"{self.message}. Código de estado: {self.status_code}."
-        else:
-            return self.message
