@@ -1,0 +1,80 @@
+{% extends 'base.html' %}
+
+{% block estilos %}
+  <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='css/index.css') }}">
+{% endblock estilos %}
+
+{% block contenido %}
+  <h2>Bienvenido, {{ nombre_usuario }}!</h2>
+
+  <h2>MOVIMIENTOS</h2>
+
+  <table id='tabla-movimientos' class="paper">
+    <thead>
+      <tr>
+        <th class="titulo-tabla">Fecha</th>
+        <th class="titulo-tabla">Hora</th>
+        <th class="titulo-tabla">Origen</th>
+        <th class="titulo-tabla">Invertido</th>
+        <th class="titulo-tabla">Destino</th>
+        <th class="titulo-tabla">Obtenido</th>
+        <th class="titulo-tabla">Unitario</th>
+      </tr>
+    </thead>
+
+    <tbody id="resultados">       
+      {% if movs %}
+        {% for m in movs %}
+          <tr>
+            <td>
+              {% if m.fecha %}
+                {{ m.fecha }}
+              {% else %}
+                ---
+              {% endif %}
+            </td>
+            <td>{{ m.hora }}</td>
+            <td>{{ m.origen }}</td>
+            <td class="numero">{{ m.invertido }}</td>
+            <td>{{ m.destino }}</td>
+            <td class="numero">{{ m.obtenido }}</td>
+            <td class="numero">{{ m.unitario }}</td>
+          </tr>
+          {% if m.has_errors %}
+            <tr>
+              <td></td>
+              <td colspan="3">
+                {% for error in m.errores %}
+                  <p class="error">{{ error }}</p>
+                {% endfor %}
+              </td>
+            </tr>
+          {% endif %}
+        {% endfor %}
+      {% else %}
+        <tr>
+          <td colspan='7' class="lista-vacia">No hay movimientos para mostrar</td>
+        </tr>
+        <tr>
+          <td colspan='7' class="lista-vacia"><a id='boton-regalo' class='button' href="/regalo-inicial">Recoge aquí tu regalo inicial</a></td>
+        </tr>
+      {% endif %}
+    </tbody>
+  </table>
+
+  <div style='display: inline-flex'>
+  <button id='anterior' class="prev-page" type='submit'>&lt;</button>
+  <div id="contenedor-paginacion"></div>
+  <button id='siguiente' class="next-page" type='submit'>&gt;</button>
+  </div>
+    
+  <button id="cargar-movimientos" class="button">Cargar</button>
+
+  <a class='button' href="/status">Estado</a>
+  <a class='button' href="/comprar">Compra</a>
+  
+  {% block scripts%}
+  <script src="/static/js/paginacion.js"></script>
+  {% endblock scripts %}
+
+{% endblock contenido %}

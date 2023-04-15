@@ -1,8 +1,11 @@
 const peticion = new XMLHttpRequest();
 console.log('estoy bien')
+
 function enviar() {
     const usuario = document.querySelector('#usuario').value;
     const contrasena = document.querySelector('#contrasena').value;
+    const fechaHora = new Date();
+
     console.log('pase por aqui');
 
 
@@ -11,7 +14,12 @@ function enviar() {
         headers: {
             'Content-Type': 'application/json'
         },
-        body: JSON.stringify({ usuario: usuario, contrasena: contrasena })
+        body: JSON.stringify({
+            usuario: usuario,
+            contrasena: contrasena,
+            fecha: fechaHora.toLocaleDateString(),
+            hora: fechaHora.toLocaleTimeString()
+        })
     })
         .then(response => response.json())
         .then(data => {

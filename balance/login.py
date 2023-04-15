@@ -3,7 +3,7 @@ from passlib.hash import pbkdf2_sha256
 
 from . import app
 from balance.models import *
-from config import RUTA_PORTFOLIO, TABLA_USERS
+from config import RUTA_PORTFOLIO, TABLA_USERS, SALDO_INICIAL_REGALO
 
 
 @app.route('/')
@@ -75,7 +75,6 @@ def nuevo():
     if request.method == 'POST':
         nombre_usuario = request.form.get('usuario')
         contrasena_usuario = request.form.get('contrasena')
-        # TODO agregar nuevo usuario a tabla usuario
 
         gestor = DBManager(RUTA_PORTFOLIO)
         nuevo_usuario = gestor.crearTabla(nombre_usuario)
@@ -95,7 +94,32 @@ def nuevo():
     return jsonify(resultado), status_code
 
 
+@app.route('/regalo-inicial')
+def regaloInicial():
+    try:
+        nombre_usuario = session['nombre_usuario']
+        gestor = DBManager(RUTA_PORTFOLIO)
+        regalo_newuser = gestor.guardarDatos(
+            nombre_usuario, SALDO_INICIAL_REGALO)
+
+        resultado = {'status': 'success',
+                     'message': 'Inicio de sesión exitoso'}
+        status_code = 200
+
+        return redirect(url_for('inicio'))
+
+    except Exception as error:
+        resultado = {
+            "status": "error",
+            "message": str(error)
+        }
+        status_code = 500
+
+    return jsonify(resultado), status_code
+
+
 @app.route('/logout')
 def logout():
     session.pop('nombre_usuario', None)
+
     return redirect(url_for('login'))

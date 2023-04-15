@@ -1,9 +1,8 @@
-from datetime import date, datetime
 from passlib.hash import pbkdf2_sha256
 import requests
 import sqlite3
 
-from config import CAMPOS_TABLA
+from config import API_URL, CRIPTOS_DISPONIBLES, DEFAULT_PAG, ENDPOINT, HEADERS, PAG_SIZE
 
 
 class User:
@@ -20,12 +19,121 @@ class User:
         return verificacion
 
 
+class Cartera:
+    def __init__(self, ruta, nombre_tabla):
+        self.ruta = ruta
+        self.tabla = nombre_tabla
+
+    def obtenerCartera(self):
+        # Inicializamos el diccionario con las diez cryptos y su cantidad en cero
+        cryptos = CRIPTOS_DISPONIBLES
+        self.cartera = {crypto: 0.00000 for crypto in cryptos}
+
+        peticion = f"SELECT origen, invertido, destino, obtenido FROM {self.tabla}"
+        try:
+            conexion = sqlite3.connect(self.ruta)
+            cursor = conexion.cursor()
+            cursor.execute(peticion)
+
+            for fila in cursor.fetchall():
+                origen, invertido, destino, obtenido = fila
+                self.cartera[destino] += round(obtenido, 5)
+
+                self.cartera[origen] -= round(invertido, 5)
+
+            conexion.close()
+
+        except sqlite3.Error as ex:
+            print(f"Error al acceder a la base de datos: {ex}")
+
+        return self.cartera
+
+    def saldoInvEUR(self, moneda='EUR'):
+        peticion = f"SELECT origen, destino, invertido, obtenido FROM {self.tabla}"
+        try:
+            conexion = sqlite3.connect(self.ruta)
+            cursor = conexion.cursor()
+            cursor.execute(peticion)
+
+            saldo = 0
+            for fila in cursor.fetchall():
+                origen, invertido, destino, obtenido = fila
+                if destino == moneda:
+                    saldo += obtenido
+                if origen == moneda:
+                    saldo -= invertido
+
+            saldo_float = float(saldo)
+
+            conexion.close()
+
+            return round(saldo_float, 5)
+
+        except sqlite3.Error as ex:
+            print(f"Error al acceder a la base de datos: {ex}")
+
+    def total_euros_invertidos(self,  moneda='EUR'):
+        peticion = f"SELECT invertido FROM {self.tabla} WHERE origen=?"
+        try:
+            conexion = sqlite3.connect(self.ruta)
+            cursor = conexion.cursor()
+            cursor.execute(peticion, (moneda,))
+
+            fila = cursor.fetchone()
+            if fila is not None:
+                total = fila[0]
+                total_float = round(float(total), 5)
+            else:
+                total_float = 0.0
+
+            conexion.close()
+
+            return total_float
+
+        except Exception as ex:
+            print(f"Error en total_euros_invertidos: {str(ex)}")
+            return 0.0
+
+    def valor_actual_cartera(self, moneda='EUR'):
+        if not self.cartera:
+            self.obtenerCartera('movimientos')
+
+        total_euros_criptos = 0
+        for crypto in self.cartera:
+            if crypto == 'EUR':
+                continue
+
+            numeroCryptos = self.cartera.get(crypto)
+            if numeroCryptos > 0:
+                api = API(API_URL, ENDPOINT, HEADERS)
+                consulta = api.consultar_api(crypto)
+                rate = consulta.get('rate')
+                rate_float = float(rate)
+                total_euros_criptos += round(self.cartera.get(crypto)
+                                             * rate_float, 5)
+                valorTotalCartera = round(
+                    self.total_euros_invertidos() + total_euros_criptos, 5)
+
+        return valorTotalCartera
+
+    def verificarFondos(self, moneda, invertido):
+        fondos_crypto = self.cartera.get(moneda)
+
+        if invertido == '' or invertido == 0:
+            return False
+
+        if moneda == 'EUR':
+            return True
+
+        return invertido <= fondos_crypto
+
+
 class DBManager:
     """
     Clase para interactuar con la base de datos SQLite
     """
-    CAMPOS = '''id INTEGER PRIMARY KEY NOT NULL UNIQUE, 
-                fecha TEXT NO NULL, 
+    CAMPOS = '''id INTEGER PRIMARY KEY NOT NULL UNIQUE,
+                fecha TEXT NO NULL,
                 hora TEXT NOT NULL,
                 origen TEXT NOT NULL,
                 invertido NUMERIC NOT NULL,
@@ -79,9 +187,71 @@ class DBManager:
             print("Error al guardar los datos: ", ex)
             return False
 
-    def consultaSQL(self, consulta):
+    def consultaSQL(self, consulta, page=1, per_page=5):
+        conexion = sqlite3.connect(self.ruta)
+        cursor = conexion.cursor()
+
+        # Calcular el número de elementos para saltar (OFFSET)
+        offset = (page - 1) * per_page
+
+        # Agregar la cláusula LIMIT y OFFSET a la consulta SQL
+        consulta_paginada = consulta + " LIMIT ? OFFSET ?"
+        parametros = (per_page, offset)
+
+        cursor.execute(consulta_paginada, parametros)
+        datos = cursor.fetchall()
+
+        activos = []
+        nombres_columna = []
+        for columna in cursor.description:
+            nombres_columna.append(columna[0])
+
+        for dato in datos:
+            indice = 0
+            activo = {}
+            for nombre in nombres_columna:
+                activo[nombre] = dato[indice]
+                indice += 1
+
+            activos.append(activo)
+
+        conexion.close()
+
+        return activos
+
+    def movsSQL(self, consulta, pag=DEFAULT_PAG, nreg=PAG_SIZE):
+        """
+        Paginación:
+
+            - número de página
+            - cantidad de registros en cada página
+
+        r = 5
+        p = 1
+
+        p1           p2            p3                p4
+        1 2 3 4 5    6 7 8 9 10    11 12 13 14 15    16 17 18 19
+
+        p1
+        offset = 0  --> (p-1)*r = 0*5: 0
+        r = 5
+
+        p2
+        offset = 5  --> (p-1)*r = 1*5: 5
+        r = 5
+
+        p3
+        offset = 10  --> (p-1)*r = 2*5: 10
+        r = 5
+
+        p4
+        offset = 15  --> (p-1)*r = 3*5: 15
+        r = 5
+        """
         # 1. Conectar a la base de datos
         conexion = sqlite3.connect(self.ruta)
+        offset = nreg*(pag - 1)
+        consulta = f'{consulta} LIMIT {nreg} OFFSET {offset}'
 
         # 2. Abrir un cursor
         cursor = conexion.cursor()
@@ -93,85 +263,25 @@ class DBManager:
         # 4.1 obtener los datos
         datos = cursor.fetchall()
 
-        self.activos = []
+        self.movimientos = []
         nombres_columna = []
         for columna in cursor.description:
             nombres_columna.append(columna[0])
 
         for dato in datos:
             indice = 0
-            activos = {}
+            movimiento = {}
             for nombre in nombres_columna:
-                activos[nombre] = dato[indice]
+                movimiento[nombre] = dato[indice]
                 indice += 1
 
-            self.activos.append(activos)
+            self.movimientos.append(movimiento)
 
         # 5. Cerrar la conexión
         conexion.close()
 
         # 6. Devolver la colección de resultados
-        return self.activos
-
-    def obtenerActivo(self, usuario, id):
-        """
-        Obtiene un activo a partir de su ID de la base de datos
-        """
-        consulta = f'SELECT {CAMPOS_TABLA} FROM {usuario} WHERE id=?'
-        conexion = sqlite3.connect(self.ruta)
-        cursor = conexion.cursor()
-        cursor.execute(consulta, (id,))
-
-        datos = cursor.fetchone()
-        resultado = None
-
-        if datos:
-            nombres_columna = []
-            for column in cursor.description:
-                nombres_columna.append(column[0])
-
-            activos = {}
-            indice = 0
-            for nombre in nombres_columna:
-                activos[nombre] = datos[indice]
-                indice += 1
-
-            print(f'Fecha ANTES: {activos["fecha"]}')
-            activos['fecha'] = date.fromisoformat(activos['fecha'])
-            print(f'DESPUÉS:  {activos["fecha"]}')
-
-            resultado = activos
-
-        conexion.close()
-        return resultado
-
-
-class CriptoView:
-    """
-Modelo <==> Controlador <==> Vista
-
-Modelo <////////> Vista  NUNCA hay comunicación entre Modelo y Vista
-
-La vista interactúa con el usuario:
-1. entrada de datos
-2. muestra datos
-TODO: Clase CriptoView
-"""
-
-    def pedir_monedas(self):
-        origen = input('¿Qué moneda quieres cambiar? ')
-        origen = origen.upper()
-        destino = input('¿Qué moneda deseas obtener? ')
-        destino = destino.upper()
-
-        return (origen, destino)
-
-    def mostrar_cambio(self, origen, destino, cambio):
-        print(f'Un {origen} vale lo mismo que {cambio:,.2f} {destino}')
-
-    def quieres_seguir(self):
-        seguir = input('¿Quieres consultar de nuevo? (S/N) ')
-        return seguir
+        return self.movimientos
 
 
 class API:
@@ -181,8 +291,13 @@ class API:
         self.endpoint = endpoint
         self.headers = headers
 
-    def consultar_api(self, origen, destino):
-        url = f"{self.api_url}{self.endpoint}/{origen}/{destino}"
+    def consultar_api(self, origen, destino='EUR', url=True):
+        if url:
+            url = f"{self.api_url}{self.endpoint}/{origen}/{destino}"
+        else:
+            url = f"{self.api_url}{self.endpoint}/{origen}?invert=false"
+            # TODO Creo que no se puede solicitar con una APIKEY gratuita
+
         response = requests.get(url, headers=self.headers)
         print(
             f"Has solicitado {response.headers.get('x-ratelimit-used')}/100 peticiones")
@@ -204,7 +319,9 @@ class API:
 
 
 class APIError(Exception):
-    """Clase de excepción personalizada para errores de la API"""
+    """
+    Clase de excepción personalizada para errores de la API
+    """
 
     def __init__(self, message, status_code=None, response=None):
         self.message = message
