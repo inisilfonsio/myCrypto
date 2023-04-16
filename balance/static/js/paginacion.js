@@ -1,6 +1,6 @@
 // Variables globales
 let page = 1; // Página actual
-const perPage = 5; // Número de resultados por página
+const perPage = 10; // Número de resultados por página
 
 // Función para cargar los movimientos
 function cargarMovimientos() {
@@ -8,6 +8,7 @@ function cargarMovimientos() {
     fetch(`/api/v1/movimientos?p=${page}&r=${perPage}`)
         .then(response => response.json())
         .then(data => {
+
             // Comprobar si la petición ha sido exitosa
             if (data.status === 'success') {
                 // Mostrar los resultados en la tabla
@@ -93,7 +94,7 @@ document.getElementById('siguiente').addEventListener('click', irPaginaSiguiente
 
 cargarMovimientos();
 
-
+// Función para crear la numeración de paginación
 function generarBotonesPaginacion() {
     const contenedorPaginacion = document.getElementById('contenedor-paginacion');
     contenedorPaginacion.innerHTML = '';

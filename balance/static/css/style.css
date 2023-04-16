@@ -1,0 +1,56 @@
+:root {
+    --primary-color: #1780b8;
+    --secondary-color: #19a187;
+
+    --medium-gray: #666;
+    --error-color: var(--primary-color);
+
+    --default-border: solid thin var(--secondary-color)
+}
+
+header {
+    background-color: var(--primary-color);
+    color: white;
+    height: 50px;
+    font-size: large;
+    line-height: 50px;
+    padding-left: 25px;
+}
+
+nav {
+    background-color: var(--secondary-color);
+    color: #FFF;
+    height: 25px;
+    line-height: 25px;
+    padding-left: 25px;
+}
+
+nav a,
+nav a:active,
+nav a:focus,
+nav a:hover,
+nav a:visited {
+    color: white;
+}
+
+.navbar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0 10px;
+}
+
+.navbar a:not(.cerrar-sesion) {
+    padding-right: 10px;
+    padding-left: 10px;
+}
+
+.cerrar-sesion {
+    margin-left: auto;
+}
+
+.pie-pagina {
+    position: relative;
+    padding: 10px;
+    border-top: var(--default-border);
+}

@@ -6,12 +6,16 @@
 
 {% block contenido %}
 
-
 <body>
+  <h1 class="titulo-principal">myCRYPTO</h1>
+  <p class='descripcion'>
+    La plataforma en línea para gestionar tus
+    inversiones en criptomonedas de manera segura y confiable.
+  </p>
+
   <img class="logo" src="{{ url_for('static', filename='images/logo.jpg') }}" alt="" width="300"
     height="100">
 
-  <h2>{{ titulo }}</h2>
   <form class='form_sign' action='/nuevo' method='POST'>
     <label for="usuario">Usuario:</label>
     <input type="text" id="usuario" name="usuario">
@@ -19,9 +23,13 @@
     <label for="contrasena">Contraseña:</label>
     <input type="password" id="contrasena" name="contrasena">
     <br>
+    <p class="frase-celebre">
+      "El primer paso no te lleva a donde quieres ir, pero te saca de donde estás"
+    </p>
     <button type="submit" onclick="enviar()">{{ titulo }}</button>
   </form>
 
 </body>
 
+{% include 'components/footer.html' %}
 {% endblock contenido %}

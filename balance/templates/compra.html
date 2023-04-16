@@ -1,7 +1,11 @@
 {% extends 'base.html' %}
 
+{% block estilos %}
+<link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='css/comprar.css') }}">
+{% endblock estilos %}
+
 {% block contenido %}
-<h2>COMPRA DE CRYPTOS</h2>
+<h2 class="titulo">COMPRA DE CRYPTOS</h2>
 
 <body>
     <form class='form-comprar' id='form-comprar' name='form-comprar'>
@@ -12,8 +16,6 @@
             {% endfor %}
         </select>
 
-        <br><br>
-
         <label for="destino">Destino:</label>
         <select id="destino" name="destino">
             {% for key in cartera.keys() %}
@@ -22,24 +24,29 @@
             {% endif %}
             {% endfor %}
         </select>
-        <br><br>
+
         <label for="invertido">Cantidad a Invertir:</label>
-        
+
         <input type="number" id="invertido" name="invertido" required min="0" step="0.01">
         <span id="error-invertir"></span>
-        <br><br>
-        <button id="calcular" type="button" disabled>Calcular</button>
-        <span id="mensaje-fondos"></span>
 
-        <br><br>
-        <label for="obtenido">Obtenido:</label>
-        <output id="obtenido"></output>
-        <span id='crypto-destino'></span>
-        <br><br>
-        <label for="unitario">Valor Unitario:</label>
-        <output id="unitario"></output>
-        <span id='crypto-origen'></span>
-        <br><br>
+        <div class="msj-fondos">
+            <button id="calcular" type="button" disabled>Calcular</button>
+            <span id="mensaje-fondos"></span>
+        </div>
+
+        <div class="result-obtenido">
+            <label id="label-obtenido" for="obtenido">Obtenido:</label>
+            <output id="obtenido"></output>
+            <span id='crypto-destino'></span>
+        </div>
+
+        <div class="result-unitario">
+            <label id="label-unitario" for="unitario">Valor Unitario:</label>
+            <output id="unitario"></output>
+            <span id='crypto-origen'></span>
+        </div>
+
         <button id="invertir" type="button" disabled>Invertir</button>
     </form>
 

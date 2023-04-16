@@ -1,0 +1,112 @@
+main {
+    margin-bottom: 100px;
+}
+
+.titulo {
+    margin: 100px 0 10px 0;
+    text-align: center;
+}
+
+.form-comprar {
+    max-width: 500px;
+    margin: 0 auto;
+    padding: 20px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+}
+
+label {
+    display: block;
+    margin-bottom: 5px;
+}
+
+select,
+input[type="number"],
+button {
+    display: block;
+    margin-bottom: 5px;
+    padding: 8px;
+    font-size: 12px;
+    border-radius: 5px;
+    border: 1px solid #ccc;
+}
+
+button {
+    background-color: #007bff;
+    color: white;
+    cursor: pointer;
+}
+
+button:disabled {
+    background-color: #ddd;
+    color: #aaa;
+    cursor: not-allowed;
+}
+
+span {
+    margin-left: 10px;
+}
+
+#error-invertir {
+    color: red;
+}
+
+#mensaje-fondos {
+    color: black;
+}
+
+.crypto-label {
+    display: inline-block;
+    margin-left: 10px;
+    font-weight: bold;
+}
+
+#calcular {
+    display: inline-block;
+}
+
+#mensaje-fondos {
+    display: inline-block;
+    font-weight: bold;
+}
+
+#label-obtenido,
+#obtenido,
+#crypto-destino,
+#label-unitario,
+#unitario,
+#crypto-origen {
+    display: inline-block;
+    margin: 0 0 0 8px
+}
+
+#label-obtenido {
+    font-weight: bold;
+    margin: 7px 0;
+}
+
+#obtenido,
+#crypto-destino {
+    color: rgb(162, 10, 10);
+    font-weight: bold;
+}
+
+#label-unitario {
+    font-weight: bold;
+    margin: 7px 0;
+
+}
+
+#unitario,
+#crypto-origen {
+    color: rgb(162, 10, 10);
+    font-weight: bold;
+}
+
+#calcular {
+    margin-top: 0;
+}
+
+#invertir {
+    margin-top: 10px;
+}

@@ -6,8 +6,9 @@
   <meta http-equiv="X-UA-Compatible" content="IE=edge">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>myCRYPTO</title>
-  <link rel="shortcut icon" href="{{ url_for('static', filename='images/logo.jpg') }}">
-  
+  <link rel="stylesheet" href="static/css/flat-remix.css">
+  <link rel="stylesheet" href="./static/css/login.css">
+
 
 </head>
 {% block scripts%}
@@ -17,10 +18,14 @@
 {% block contenido %}
 
 <body>
-  <img class="logo" src="{{ url_for('static', filename='images/logo.jpg') }}" alt="" width="300"
-    height="100">
+  <h1 class="titulo-principal">myCRYPTO</h1>
+  <p class='descripcion'>
+    La plataforma en línea para gestionar tus
+    inversiones en criptomonedas de manera segura y confiable.
+  </p>
 
-  <h2>{{ titulo }}</h2>
+  <img class="logo" src="{{ url_for('static', filename='images/logo.jpg') }}">
+
   <form class='form_sign' action='/login' method='POST'>
     <label for="usuario">Usuario:</label>
     <input type="text" id="usuario" name="usuario">

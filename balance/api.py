@@ -1,5 +1,4 @@
 from flask import jsonify, redirect, render_template, request, session, url_for
-from flask_login import current_user
 
 from . import app
 from balance.models import *
@@ -78,8 +77,11 @@ def obtener_movimientos():
             resultado = {
                 'status': 'success',
                 'results': movimientos,
+                'page': page,
+                'perPage': per_page,
                 'total': total
             }
+            # TODO Conseguir que page y perPage dependan del Backend y no de JS
             status_code = 200
         else:
             resultado = {

@@ -68,7 +68,7 @@ def login():
 def nuevo():
 
     if request.method == 'GET':
-        titulo = 'Crear cuenta'
+        titulo = 'Crea tu cuenta'
 
         return render_template('auth/newuser.html', titulo=titulo)
 
